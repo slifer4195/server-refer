@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, session, current_app, render_template
 from ..models import db, User, UserCustomer
 from .reminder import send_weekly_reminders
+from sqlalchemy import inspect
 
 user_bp = Blueprint('users', __name__)
 
@@ -73,3 +74,4 @@ def user_customers():
         })
 
     return jsonify(result), 200
+

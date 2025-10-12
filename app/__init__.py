@@ -22,12 +22,14 @@ def create_app():
     from .routes.functionality import functionality
     from .routes.menu import menu_bp 
     from .routes.point_system import point_bp
+    from .routes.flask_test import api_bp
 
     app.register_blueprint(point_bp)
     app.register_blueprint(menu_bp)
     app.register_blueprint(functionality)
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
+    app.register_blueprint(api_bp)
 
     with app.app_context():
         db.create_all()

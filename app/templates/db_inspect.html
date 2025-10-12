@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Database Inspector</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { border-collapse: collapse; margin-bottom: 40px; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        h2 { margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <h1>Database Structure</h1>
+
+    {% for table, columns in tables.items() %}
+        <h2>{{ table }}</h2>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Nullable</th>
+                <th>Default</th>
+            </tr>
+            {% for col in columns %}
+            <tr>
+                <td>{{ col['name'] }}</td>
+                <td>{{ col['type'] }}</td>
+                <td>{{ col['nullable'] }}</td>
+                <td>{{ col['default'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
+</body>
+</html>
