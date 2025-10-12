@@ -6,7 +6,7 @@ api_key = os.environ.get("API_KEY")
 
 class Config:
     SECRET_KEY = api_key
-    SQLALCHEMY_DATABASE_URI = os.environ.get("postgresql://postgres:VXXrjJwXbhbiPtdguciLWXXYcgcZVeGT@switchback.proxy.rlwy.net:49627/railway")  # <-- use Railway DB
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")  # <-- use Railway DB
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     SESSION_TYPE = 'filesystem'
