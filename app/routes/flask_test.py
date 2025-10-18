@@ -1,5 +1,5 @@
 from sqlalchemy import inspect
-from flask import Blueprint, render_template, session, request , redirect
+from flask import Blueprint,jsonify, render_template, session, request , redirect
 from ..models import db, User, Customer, MenuItem
 
 
@@ -45,3 +45,11 @@ def dashboard():
     menu_items = MenuItem.query.filter_by(user_id=user_id).all()
 
     return render_template("dashboard.html", user=user, customers=customers, menu_items=menu_items)
+
+@api_bp.route("/db-test")
+def db_test():
+    try:
+        users = User.query.all()
+        return jsonify({"status": "connected", "user_count": len(users)}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500

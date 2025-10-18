@@ -3,7 +3,6 @@ from flask_cors import CORS
 from flask_session import Session
 import os
 
-# Use absolute imports instead of relative
 from app.models import db
 from app.config import Config
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -13,10 +12,17 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Init extensions
+    # Initialize database and session
     db.init_app(app)
     Session(app)
-    CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
+
+    # Global CORS setup for React localhost
+    # This allows cross-origin requests with cookies/session
+    CORS(
+        app,
+        supports_credentials=True,
+        origins=["http://localhost:3000", "https://refer-backend.up.railway.app"]
+    )
 
     # Register Blueprints
     from app.routes.auth_routes import auth_bp
@@ -33,15 +39,17 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(api_bp)
 
-    # Drop and recreate tables (only for dev/testing)
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
+    # Only for development: drop and recreate all tables
+    if os.environ.get("FLASK_ENV") == "development":
+        with app.app_context():
+            db.drop_all()
+            db.create_all()
 
-        # Optional: scheduler
-        # scheduler = BackgroundScheduler()
-        # scheduler.add_job(func=send_weekly_reminders, args=[app], trigger="interval", days=7)
-        # if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        #     scheduler.start()
+    # Optional: scheduler for background tasks
+    # with app.app_context():
+    #     scheduler = BackgroundScheduler()
+    #     scheduler.add_job(func=send_weekly_reminders, args=[app], trigger="interval", days=7)
+    #     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    #         scheduler.start()
 
     return app
