@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 db = SQLAlchemy()
 
 class User(db.Model):
+    __tablename__ = 'users'  # avoid reserved words like "user" in PostgreSQL
 
     id = db.Column(db.Integer, primary_key=True)
     company_name = db.Column(db.String(128), nullable=False)
@@ -21,6 +22,7 @@ class User(db.Model):
 
 
 class Customer(db.Model):
+    __tablename__ = 'customers'
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), nullable=False)
@@ -29,6 +31,7 @@ class Customer(db.Model):
 
 
 class UserCustomer(db.Model):
+    __tablename__ = 'user_customers'
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
@@ -41,6 +44,8 @@ class UserCustomer(db.Model):
 
 
 class MenuItem(db.Model):
+    __tablename__ = 'menu_items'
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     price = db.Column(db.Float, nullable=False)
