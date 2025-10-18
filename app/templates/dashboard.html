@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+</head>
+<body>
+  <h1>Welcome, {{ user.company_name }}!</h1>
+
+  <h2>Your Menu Items</h2>
+  <ul>
+    {% for item in menu_items %}
+      <li>{{ item.name }} — ${{ item.price }} ({{ item.required_points }} points)</li>
+    {% else %}
+      <li>No menu items found.</li>
+    {% endfor %}
+  </ul>
+
+  <h2>All Customers</h2>
+  <ul>
+    {% for customer in customers %}
+      <li>{{ customer.email }}</li>
+    {% else %}
+      <li>No customers found.</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

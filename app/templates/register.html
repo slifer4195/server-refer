@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+      gap: 10px;
+    }
+    input, button {
+      padding: 8px;
+      font-size: 14px;
+    }
+    #verify-section {
+      display: none;
+      margin-top: 20px;
+    }
+    .message {
+      margin-top: 10px;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h2>Register</h2>
+  <form id="register-form">
+    <input type="text" id="company_name" placeholder="Company Name" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button type="submit">Register</button>
+  </form>
+
+  <div id="verify-section">
+    <h3>Enter Verification Code</h3>
+    <input type="text" id="code" placeholder="Verification Code" />
+    <button id="verify-btn">Verify</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <script>
+    const registerForm = document.getElementById("register-form");
+    const verifySection = document.getElementById("verify-section");
+    const messageDiv = document.getElementById("message");
+
+    // Step 1: submit registration
+    registerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const company_name = document.getElementById("company_name").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch("/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ company_name, email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          messageDiv.style.color = "green";
+          messageDiv.textContent = data.message;
+          verifySection.style.display = "block";
+        } else {
+          messageDiv.style.color = "red";
+          messageDiv.textContent = data.error;
+        }
+      } catch (err) {
+        messageDiv.style.color = "red";
+        messageDiv.textContent = "Error connecting to server.";
+      }
+    });
+
+    // Step 2: verify registration code
+    document.getElementById("verify-btn").addEventListener("click", async () => {
+      const code = document.getElementById("code").value;
+      try {
+        const res = await fetch("/verify-registration", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          messageDiv.style.color = "green";
+          messageDiv.textContent = data.message;
+          verifySection.style.display = "none";
+          registerForm.reset();
+          // Redirect to login page after successful registration
+          window.location.href = "/login-inspect";
+        } else {
+          messageDiv.style.color = "red";
+          messageDiv.textContent = data.error;
+        }
+      } catch (err) {
+        messageDiv.style.color = "red";
+        messageDiv.textContent = "Error connecting to server.";
+      }
+    });
+  </script>
+</body>
+</html>
