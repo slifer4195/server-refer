@@ -22,7 +22,8 @@ def send_email(to_email, subject, body):
             smtp.send_message(msg)
         return {"success": True}
     except Exception as e:
-        return {"success": False}
+        print("Email send failed:", e)  # Log the error in server console
+        return {"success": False, "message": str(e)}
 
 def increase_point_internal(user_id, customer_id, change=1):
     assoc = (
