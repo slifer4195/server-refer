@@ -20,12 +20,12 @@ def send_email(to_email, subject, body):
     smtp_server = "smtp.gmail.com"
     port = 587  # Use STARTTLS port
     context = ssl.create_default_context()
-    
     try:
         with smtplib.SMTP(smtp_server, port) as server:
-            server.starttls(context=context)  # upgrade connection to secure
+            server.starttls(context=context)
             server.login(sender_email, app_password)
-            server.send_message(msg)
+            server.sendmail(sender_email, to_email, msg.as_string())
+
         return {"success": True}
     except Exception as e:
         print("Email send failed:", e)  # Log the error
