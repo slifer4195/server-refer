@@ -45,7 +45,7 @@ def register():
     smtp_server = "smtp.gmail.com"
     port = 587
     sender_email = 's01410921@gmail.com'
-    password_app = 'tdyt ujcd wvdf xcdt'  # Not your normal Gmail password
+    password_app = 'ydyt ujcd wvdf xcdt'  # Not your normal Gmail password
 
     message = MIMEText(f"Your registration verification code is: {code}")
     message["Subject"] = "Verify Your Email"

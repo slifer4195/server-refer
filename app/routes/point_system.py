@@ -10,7 +10,7 @@ point_bp = Blueprint('points', __name__)
 
 def send_email(to_email, subject, body):
     sender_email = 's01410921@gmail.com'
-    app_password = 'tdyt ujcd wvdf xcdt'  # Not your normal Gmail password
+    app_password = 'ydyt ujcd wvdf xcdt'  # Not your normal Gmail password
 
     msg = EmailMessage()
     msg['Subject'] = subject
