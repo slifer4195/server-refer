@@ -3,6 +3,7 @@ import smtplib
 from email.message import EmailMessage
 from ..models import db, Customer, MenuItem, UserCustomer
 import ssl
+import threading
 
 point_bp = Blueprint('points', __name__)
 
@@ -48,17 +49,21 @@ def increase_point_internal(user_id, customer_id, change=1):
         'success': True,
         'points': assoc.points
     })
+
+# --- Background thread wrapper ---
+def send_email_background(to_email, subject, body):
+    threading.Thread(target=send_email, args=(to_email, subject, body)).start()
+
+# --- Flask route ---
 @point_bp.route('/send-test-email', methods=['POST'])
 def send_test_email():
-    print("CORS Origin Header:", request.headers.get("Origin"))
-
     data = request.get_json()
     recipient = data.get('to')
     subject = data.get('subject', 'Hello from Flask')
     body = data.get('body', 'This is a test email.')
     point = int(data.get('point', 1))
 
-    # Use session for authentication
+    # Authentication
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'Unauthorized'}), 401
@@ -67,12 +72,10 @@ def send_test_email():
     if not recipient or not customer_id:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    # Send email
-    mail_result = send_email(recipient, subject, body)
-    if not mail_result["success"]:
-        return jsonify({'error': 'Failed to send email', 'message': mail_result["message"]}), 500
+    # Send email asynchronously
+    send_email_background(recipient, subject, body)
 
-    # Update points
+    # Update points immediately
     assoc = UserCustomer.query.filter_by(user_id=user_id, customer_id=customer_id).first()
     if not assoc:
         return jsonify({'error': 'User-Customer association not found'}), 404
@@ -80,8 +83,7 @@ def send_test_email():
     assoc.points += point
     db.session.commit()
 
-    return jsonify({'message': 'Email sent and points updated', 'points': assoc.points}), 200
-
+    return jsonify({'message': 'Email queued and points updated', 'points': assoc.points}), 200
 
 
 @point_bp.route('/customer_point/<int:customer_id>', methods=['GET'])
