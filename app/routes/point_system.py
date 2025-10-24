@@ -44,6 +44,8 @@ def increase_point_internal(user_id, customer_id, change=1):
     })
 @point_bp.route('/send-test-email', methods=['POST'])
 def send_test_email():
+    print("CORS Origin Header:", request.headers.get("Origin"))
+
     data = request.get_json()
     recipient = data.get('to')
     subject = data.get('subject', 'Hello from Flask')
