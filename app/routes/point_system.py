@@ -2,9 +2,10 @@ from flask import Blueprint, jsonify, request, session
 import smtplib
 from email.message import EmailMessage
 from ..models import db, Customer, MenuItem, UserCustomer
-
+import ssl
 
 point_bp = Blueprint('points', __name__)
+
 
 def send_email(to_email, subject, body):
     sender_email = 's01410921@gmail.com'
@@ -16,13 +17,18 @@ def send_email(to_email, subject, body):
     msg['To'] = to_email
     msg.set_content(body)
 
+    smtp_server = "smtp.gmail.com"
+    port = 587  # Use STARTTLS port
+    context = ssl.create_default_context()
+    
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-            smtp.login(sender_email, app_password)
-            smtp.send_message(msg)
+        with smtplib.SMTP(smtp_server, port) as server:
+            server.starttls(context=context)  # upgrade connection to secure
+            server.login(sender_email, app_password)
+            server.send_message(msg)
         return {"success": True}
     except Exception as e:
-        print("Email send failed:", e)  # Log the error in server console
+        print("Email send failed:", e)  # Log the error
         return {"success": False, "message": str(e)}
 
 def increase_point_internal(user_id, customer_id, change=1):
