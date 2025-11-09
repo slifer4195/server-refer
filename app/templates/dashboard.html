@@ -15,7 +15,49 @@
 
     <p id="responseMessage"></p>
 
+    <h3>All Users and Customers</h3>
+    <div id="usersContainer"></div>
+
     <script>
+        async function loadUsers() {
+            const res = await fetch("/user-customer");
+            const data = await res.json();
+
+            const container = document.getElementById("usersContainer");
+            container.innerHTML = "";
+
+            data.forEach(user => {
+                const userDiv = document.createElement("div");
+                userDiv.style.border = "1px solid #ccc";
+                userDiv.style.margin = "10px 0";
+                userDiv.style.padding = "10px";
+
+                const userInfo = document.createElement("h4");
+                userInfo.textContent = `${user.company_name} (${user.email})`;
+                userDiv.appendChild(userInfo);
+
+                if (user.customers.length === 0) {
+                    const noCust = document.createElement("p");
+                    noCust.textContent = "No customers yet.";
+                    userDiv.appendChild(noCust);
+                } else {
+                    const list = document.createElement("ul");
+                    user.customers.forEach(c => {
+                        const item = document.createElement("li");
+                        item.textContent = `${c.email} - ${c.points} pts`;
+                        list.appendChild(item);
+                    });
+                    userDiv.appendChild(list);
+                }
+
+                container.appendChild(userDiv);
+            });
+        }
+
+        // Load users on page load
+        loadUsers();
+
+        // Add customer form
         document.getElementById("addCustomerForm").addEventListener("submit", async (e) => {
             e.preventDefault();
 
@@ -35,6 +77,7 @@
             if (res.ok) {
                 msg.textContent = `✅ Added customer: ${data.email}`;
                 msg.style.color = "green";
+                loadUsers(); // Refresh list after adding
             } else {
                 msg.textContent = `❌ ${data.error}`;
                 msg.style.color = "red";
