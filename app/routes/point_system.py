@@ -57,6 +57,7 @@ def send_email_background(to_email, subject, body):
 # --- Flask route ---
 @point_bp.route('/send-test-email', methods=['POST'])
 def send_test_email():
+    print("sent")
     data = request.get_json()
     recipient = data.get('to')
     subject = data.get('subject', 'Hello from Flask')

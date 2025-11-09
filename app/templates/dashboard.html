@@ -42,11 +42,34 @@
                     userDiv.appendChild(noCust);
                 } else {
                     const list = document.createElement("ul");
+
                     user.customers.forEach(c => {
                         const item = document.createElement("li");
-                        item.textContent = `${c.email} - ${c.points} pts`;
+                        item.textContent = `${c.email} - ${c.points} pts `;
+
+                        const sendBtn = document.createElement("button");
+                        sendBtn.textContent = "Send Email";
+                        sendBtn.style.marginLeft = "10px";
+
+                        sendBtn.addEventListener("click", async () => {
+                            const res = await fetch("/send-test-email", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ customer_email: c.email })
+                            });
+
+                            if (res.ok) {
+                                alert(`✅ Email sent to ${c.email}`);
+                            } else {
+                                const err = await res.json();
+                                alert(`❌ Failed to send: ${err.error || "Unknown error"}`);
+                            }
+                        });
+
+                        item.appendChild(sendBtn);
                         list.appendChild(item);
                     });
+
                     userDiv.appendChild(list);
                 }
 
@@ -77,7 +100,7 @@
             if (res.ok) {
                 msg.textContent = `✅ Added customer: ${data.email}`;
                 msg.style.color = "green";
-                loadUsers(); // Refresh list after adding
+                loadUsers(); // refresh
             } else {
                 msg.textContent = `❌ ${data.error}`;
                 msg.style.color = "red";
