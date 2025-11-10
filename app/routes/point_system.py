@@ -4,6 +4,7 @@ from email.message import EmailMessage
 from ..models import db, Customer, MenuItem, UserCustomer
 import ssl
 import threading
+import os
 
 point_bp = Blueprint('points', __name__)
 
@@ -55,28 +56,51 @@ def send_email_background(to_email, subject, body):
     threading.Thread(target=send_email, args=(to_email, subject, body)).start()
 
 # --- Flask route ---
+
 @point_bp.route('/send-test-email', methods=['POST'])
 def send_test_email():
-    print("sent")
     data = request.get_json()
     recipient = data.get('to')
     subject = data.get('subject', 'Hello from Flask')
     body = data.get('body', 'This is a test email.')
     point = int(data.get('point', 1))
+    customer_id = data.get('customer_id')
 
-    # Authentication
+    # Check authentication
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'Unauthorized'}), 401
 
-    customer_id = data.get('customer_id')
     if not recipient or not customer_id:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    # Send email asynchronously
-    send_email_background(recipient, subject, body)
+    # --- Send email using MailerSend ---
+    api_key = os.getenv("MAILERSEND_API_KEY")
+    if not api_key:
+        return jsonify({"error": "MailerSend API key not found"}), 500
 
-    # Update points immediately
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "from": {"email": "no-reply@yourdomain.com", "name": "Your Company"},
+        "to": [{"email": recipient}],
+        "subject": subject,
+        "text": body
+    }
+
+    res = request.post("https://api.mailersend.com/v1/email", headers=headers, json=payload)
+
+    if res.status_code != 202:
+        try:
+            error_info = res.json()
+        except:
+            error_info = {"error": "Unknown MailerSend error"}
+        return jsonify({"error": "Failed to send email", "details": error_info}), 500
+
+    # --- Update points in DB ---
     assoc = UserCustomer.query.filter_by(user_id=user_id, customer_id=customer_id).first()
     if not assoc:
         return jsonify({'error': 'User-Customer association not found'}), 404
@@ -84,7 +108,10 @@ def send_test_email():
     assoc.points += point
     db.session.commit()
 
-    return jsonify({'message': 'Email queued and points updated', 'points': assoc.points}), 200
+    return jsonify({
+        'message': f'Email sent to {recipient} and points updated.',
+        'points': assoc.points
+    }), 200
 
 
 @point_bp.route('/customer_point/<int:customer_id>', methods=['GET'])
