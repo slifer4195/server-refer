@@ -55,11 +55,19 @@
                             const res = await fetch("/send-test-email", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ customer_email: c.email })
+                                body: JSON.stringify({ 
+                                    to: c.email,
+                                    customer_id: c.customer_id,  // must match your DB
+                                    subject: "Hello from Your Company",
+                                    body: "This is a test email",
+                                    point: 1
+                                })
                             });
 
                             if (res.ok) {
-                                alert(`✅ Email sent to ${c.email}`);
+                                const data = await res.json();
+                                alert(`✅ Email sent to ${c.email}. New points: ${data.points}`);
+                                loadUsers(); // refresh points
                             } else {
                                 const err = await res.json();
                                 alert(`❌ Failed to send: ${err.error || "Unknown error"}`);
