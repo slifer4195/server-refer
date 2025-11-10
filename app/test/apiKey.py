@@ -1,5 +1,7 @@
-import secrets
+from dotenv import load_dotenv
 import os
 
-print(secrets.token_hex(32))
-print("DB URL:", os.environ.get("DATABASE_URL"))
+load_dotenv()  # load variables from .env
+
+api_key = os.environ.get("MAILERSEND_API_KEY")
+print("MailerSend key:", api_key)
