@@ -75,7 +75,7 @@ def send_test_email():
         return jsonify({'error': 'Missing required fields'}), 400
 
     # --- Send email using MailerSend ---
-    api_key = os.getenv("MAILERSEND_API_KEY")
+    api_key = os.environ.get("MAILERSEND_API_KEY")
     if not api_key:
         return jsonify({"error": "MailerSend API key not found"}), 500
 
