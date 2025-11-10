@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, session, current_app, render_template
 from ..models import db, User, UserCustomer
 from .reminder import send_weekly_reminders
 from sqlalchemy import inspect
+import os 
 
 user_bp = Blueprint('users', __name__)
 
@@ -12,6 +13,7 @@ def home():
 @user_bp.route('/ping', methods=['GET'])
 def ping():
     current_app.logger.info("Ping success")
+    print("MailerSend key on Railway:", os.environ.get("MAILERSEND_API_KEY"))
     return jsonify({"message": "Ping success"}), 200
 
 @user_bp.route('/remind', methods=['GET'])

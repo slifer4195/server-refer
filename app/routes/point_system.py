@@ -4,7 +4,7 @@ from email.message import EmailMessage
 from ..models import db, Customer, MenuItem, UserCustomer
 import ssl
 import threading
-import os
+import os, requests
 
 point_bp = Blueprint('points', __name__)
 
@@ -91,7 +91,7 @@ def send_test_email():
         "text": body
     }
 
-    res = request.post("https://api.mailersend.com/v1/email", headers=headers, json=payload)
+    res = requests.post("https://api.mailersend.com/v1/email", headers=headers, json=payload)
 
     if res.status_code != 202:
         try:
