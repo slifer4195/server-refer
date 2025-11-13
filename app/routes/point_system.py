@@ -5,9 +5,10 @@ from ..models import db, Customer, MenuItem, UserCustomer
 import ssl
 import threading
 import os, requests
+import resend
 
 point_bp = Blueprint('points', __name__)
-
+resend.api_key = "re_VwjyUSpM_Gqj72Xh4nv4HdLstqhHWjtzP"
 
 def send_email(to_email, subject, body):
     sender_email = 's01410921@gmail.com'
@@ -75,31 +76,16 @@ def send_test_email():
         return jsonify({'error': 'Missing required fields'}), 400
 
     # --- Send email using MailerSend ---
-    api_key = os.environ.get("MAILERSEND_API_KEY")
-    if not api_key:
+    resend.api_key = os.environ.get("RESEND_API")
+    if not resend.api_key:
         return jsonify({"error": "MailerSend API key not found"}), 500
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "from": {"email": "no-reply@yourdomain.com", "name": "Your Company"},
-        "to": [{"email": recipient}],
-        "subject": subject,
-        "text": body
-    }
-
-    res = requests.post("https://api.mailersend.com/v1/email", headers=headers, json=payload)
-
-    if res.status_code != 202:
-        try:
-            error_info = res.json()
-        except:
-            error_info = {"error": "Unknown MailerSend error"}
-        return jsonify({"error": "Failed to send email", "details": error_info}), 500
-
+    r = resend.Emails.send({
+    "from": "onboarding@resend.dev",
+    "to": recipient ,
+    "subject": "Hello World",
+    "html": "<p>Congrats on sending your <strong>first email</strong>!</p>"
+    })
     # --- Update points in DB ---
     assoc = UserCustomer.query.filter_by(user_id=user_id, customer_id=customer_id).first()
     if not assoc:
