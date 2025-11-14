@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 api_key = os.environ.get("API_KEY")
+mail_pw = os.environ.get("MAIL_PW")
 
 class Config:
     SECRET_KEY = api_key

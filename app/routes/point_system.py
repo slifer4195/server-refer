@@ -4,13 +4,16 @@ from email.message import EmailMessage
 from ..models import db, Customer, MenuItem, UserCustomer
 import ssl
 import threading
+import os 
+from ..config import mail_pw
 
 point_bp = Blueprint('points', __name__)
 
 
 def send_email(to_email, subject, body):
+
     sender_email = 's01410921@gmail.com'
-    app_password = 'zxpi rxgn nwlx syop'  # Not your normal Gmail password
+    app_password = mail_pw 
 
     msg = EmailMessage()
     msg['Subject'] = subject
@@ -29,7 +32,6 @@ def send_email(to_email, subject, body):
 
         return {"success": True}
     except Exception as e:
-        print("Email send failed:", e)  # Log the error
         return {"success": False, "message": str(e)}
 
 def increase_point_internal(user_id, customer_id, change=1):

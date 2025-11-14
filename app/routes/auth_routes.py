@@ -4,6 +4,8 @@ import random, re, smtplib, ssl
 from email.mime.text import MIMEText
 auth_bp = Blueprint('auth', __name__)
 import re
+from ..config import mail_pw
+
 auth_bp.secret_key = "yoursecretkey"
 
 
@@ -45,7 +47,7 @@ def register():
     smtp_server = "smtp.gmail.com"
     port = 587
     sender_email = 's01410921@gmail.com'
-    password_app = 'zxpi rxgn nwlx syop'  # Not your normal Gmail password
+    password_app = mail_pw  # Not your normal Gmail password
 
     message = MIMEText(f"Your registration verification code is: {code}")
     message["Subject"] = "Verify Your Email"
