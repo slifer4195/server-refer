@@ -4,15 +4,13 @@ from email.message import EmailMessage
 from ..models import db, Customer, MenuItem, UserCustomer
 import ssl
 import threading
-import os, requests
-import resend
 
 point_bp = Blueprint('points', __name__)
-resend.api_key = "re_VwjyUSpM_Gqj72Xh4nv4HdLstqhHWjtzP"
+
 
 def send_email(to_email, subject, body):
     sender_email = 's01410921@gmail.com'
-    app_password = 'ydyt ujcd wvdf xcdt'  # Not your normal Gmail password
+    app_password = 'zxpi rxgn nwlx syop'  # Not your normal Gmail password
 
     msg = EmailMessage()
     msg['Subject'] = subject
@@ -57,48 +55,59 @@ def send_email_background(to_email, subject, body):
     threading.Thread(target=send_email, args=(to_email, subject, body)).start()
 
 # --- Flask route ---
-
 @point_bp.route('/send-test-email', methods=['POST'])
 def send_test_email():
     data = request.get_json()
     recipient = data.get('to')
     subject = data.get('subject', 'Hello from Flask')
     body = data.get('body', 'This is a test email.')
-    point = int(data.get('point', 1))
-    customer_id = data.get('customer_id')
 
-    # Check authentication
     user_id = session.get('user_id')
+
+    customer_id = data.get('customer_id')
+    point = int(data.get('point', 1))
+
+    missing = []
+    if not recipient:
+        missing.append("recipient (to)")
     if not user_id:
-        return jsonify({'error': 'Unauthorized'}), 401
+        missing.append("user_id (session)")
+    if not customer_id:
+        missing.append("customer_id")
 
-    if not recipient or not customer_id:
-        return jsonify({'error': 'Missing required fields'}), 400
+    if missing:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing)}"}), 400
 
-    # --- Send email using MailerSend ---
-    resend.api_key = os.environ.get("RESEND_API")
-    if not resend.api_key:
-        return jsonify({"error": "MailerSend API key not found"}), 500
+    # Send the email
+    mail_result = send_email(recipient, subject, body)
 
-    r = resend.Emails.send({
-    "from": "onboarding@resend.dev",
-    "to": recipient ,
-    "subject": "Hello World",
-    "html": "<p>Congrats on sending your <strong>first email</strong>!</p>"
-    })
-    # --- Update points in DB ---
-    assoc = UserCustomer.query.filter_by(user_id=user_id, customer_id=customer_id).first()
+    if not mail_result["success"]:
+        return jsonify({
+            'error': 'Failed to send email',
+            'message': mail_result["message"]
+        }), 500
+
+    # Only increase points if email succeeded
+    assoc = (
+        db.session.query(UserCustomer)
+        .filter_by(user_id=user_id, customer_id=customer_id)
+        .first()
+    )
+
     if not assoc:
-        return jsonify({'error': 'User-Customer association not found'}), 404
+        return jsonify({'error': 'Customer not found for this user'}), 404
 
-    assoc.points += point
-    db.session.commit()
+    if point > 0:
+        assoc.points = max(0, min(100, assoc.points + point))
+        db.session.commit()
 
     return jsonify({
-        'message': f'Email sent to {recipient} and points updated.',
-        'points': assoc.points
+        'success': True,
+        'customer_id': assoc.customer_id,
+        'email': assoc.customer.email,
+        'points': assoc.points,
+        'message': f"Email sent to {recipient} and {point} points added"
     }), 200
-
 
 @point_bp.route('/customer_point/<int:customer_id>', methods=['GET'])
 def get_customer_points(customer_id):
