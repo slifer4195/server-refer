@@ -1,21 +1,30 @@
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-api_key = os.environ.get("API_KEY")
-mail_pw = os.environ.get("MAIL_PW")
+import json
+import boto3
 
 class Config:
-    SECRET_KEY = api_key
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SESSION_TYPE = 'filesystem'
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SECURE = False      # keep False for local (True only in production)
-    SESSION_COOKIE_SAMESITE = 'Lax'    # use 'None' only if using HTTPS + cross-site cookies
+    SESSION_COOKIE_SECURE = False      # True only if using HTTPS
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
-    # Use SQLite locally, Postgres on Railway
-    if os.environ.get("FLASK_ENV") == "production":
-        SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    # --- Check if running on EC2 (production) ---
+    is_ec2 = os.path.exists("/sys/hypervisor/uuid") or os.path.exists("/sys/devices/virtual/dmi/id/product_uuid")
+
+    if is_ec2:
+        # --- Fetch DB credentials from AWS Secrets Manager ---
+        client = boto3.client("secretsmanager", region_name="us-east-2")
+        secret_value = client.get_secret_value(SecretId='rds!db-b8a71aed-fd5d-4cbb-b8d1-4c4484f913fc')
+        secret = json.loads(secret_value["SecretString"])
+
+        DB_USER = secret["username"]
+        DB_PASSWORD = secret["password"]
+        DB_HOST = "referdb.cbemcy8c28z4.us-east-2.rds.amazonaws.com"
+        DB_PORT = "5432"
+        DB_NAME = "refer_db"
+
+        SQLALCHEMY_DATABASE_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     else:
+        # --- Local development uses SQLite ---
         SQLALCHEMY_DATABASE_URI = "sqlite:///local.db"
