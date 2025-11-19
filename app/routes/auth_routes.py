@@ -4,7 +4,10 @@ import random, re, smtplib, ssl
 from email.mime.text import MIMEText
 auth_bp = Blueprint('auth', __name__)
 import re
-from ..config import mail_pw
+from ..config import Config
+
+mail_pw = Config.MAIL_PW
+
 
 auth_bp.secret_key = "yoursecretkey"
 

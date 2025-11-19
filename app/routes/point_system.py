@@ -5,7 +5,10 @@ from ..models import db, Customer, MenuItem, UserCustomer
 import ssl
 import threading
 import os 
-from ..config import mail_pw
+from ..config import Config
+
+mail_pw = Config.MAIL_PW
+
 
 point_bp = Blueprint('points', __name__)
 
