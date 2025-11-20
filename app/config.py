@@ -34,10 +34,9 @@ class Config:
         # --- Fetch MAIL_PW from SSM Parameter Store ---
         ssm_client = boto3.client("ssm", region_name="us-east-2")
         MAIL_PW = ssm_client.get_parameter(
-            Name="/myapp/MAIL_PW",  # your parameter name in SSM
+            Name="/MAIL_PW",  # your parameter name in SSM
             WithDecryption=True
         )["Parameter"]["Value"]
-
     else:
         # --- Local development uses .env ---
         SQLALCHEMY_DATABASE_URI = "sqlite:///local.db"
