@@ -16,16 +16,11 @@ def create_app():
     db.init_app(app)
     Session(app)
 
-    # Global CORS setup
-    CORS(
-        app,
-        supports_credentials=True,
-        origins=[
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "http://localhost:5000",
-        ]
-    )
+    CORS(app, supports_credentials=True, origins=[
+        "https://bluepoint.click",    # production
+        "http://localhost:3000"       # local dev
+    ])
+
 
     # Register Blueprints
     from app.routes.auth_routes import auth_bp

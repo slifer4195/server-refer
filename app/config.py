@@ -9,8 +9,8 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SESSION_TYPE = 'filesystem'
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SECURE = False      # True only if using HTTPS
-    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE='None'
 
     # --- Check if running on EC2 (production) ---
     is_ec2 = os.path.exists("/sys/hypervisor/uuid") or os.path.exists("/sys/devices/virtual/dmi/id/product_uuid")
